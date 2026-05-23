@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Syndicate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════
+   SYNDICATE — Global Styles
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --bg:          #07090f;
+  --panel:       #0c1120;
+  --card:        #101827;
+  --card2:       #141e2e;
+  --border:      #1b2940;
+  --border-lit:  #253a5e;
+  --accent:      #e8572a;
+  --accent-dim:  rgba(232,87,42,0.18);
+  --accent2:     #f5a623;
+  --town:        #3ddc84;
+  --syndicate:   #e84242;
+  --detective:   #60a5fa;
+  --doctor:      #34d399;
+  --text:        #dce6f5;
+  --muted:       #5a6e88;
+  --muted2:      #3d4f65;
+  --font-d: 'Bebas Neue', sans-serif;
+  --font-b: 'DM Sans', sans-serif;
+  --font-m: 'DM Mono', monospace;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 30px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body {
+  font-family: var(--font-b);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+  overflow-x: hidden;
+}
+button { font-family: var(--font-b); cursor: pointer; border: none; }
+input, select { font-family: var(--font-b); }
+select { appearance: none; }
+img { display: block; }
+
+/* ── Utility ── */
+.hidden   { display: none !important; }
+.sr-only  { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 2px; }
+
+/* ── Animations ── */
+@keyframes fadeUp   { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+@keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+@keyframes pop      { from { opacity:0; transform:scale(0.88); } to { opacity:1; transform:scale(1); } }
+@keyframes pulse    { 0%,100% { opacity:1; } 50% { opacity:0.55; } }
+@keyframes shimmer  { from { background-position: -200% center; } to { background-position: 200% center; } }
+@keyframes glow     { 0%,100% { box-shadow: 0 0 14px rgba(232,87,42,0.3); } 50% { box-shadow: 0 0 28px rgba(232,87,42,0.6); } }
+@keyframes slideIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes ripple   { from { transform: scale(0); opacity:0.6; } to { transform: scale(2.5); opacity:0; } }
+
+.anim-fadeup  { animation: fadeUp  0.45s cubic-bezier(.22,1,.36,1) both; }
+.anim-pop     { animation: pop     0.35s cubic-bezier(.22,1,.36,1) both; }
+.anim-fadein  { animation: fadeIn  0.3s ease both; }
+
+/* ════════════════════════════════════════════════════════════
+   SCREEN SYSTEM
+   ════════════════════════════════════════════════════════════ */
+.screen { display: none; min-height: 100dvh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ════════════════════════════════════════════════════════════
+   SETUP SCREEN  (Supabase credentials)
+   ════════════════════════════════════════════════════════════ */
+#screen-setup {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: radial-gradient(ellipse at 50% 0%, #111830 0%, var(--bg) 65%);
+}
+.setup-box {
+  width: 100%;
+  max-width: 480px;
+  animation: fadeUp 0.5s cubic-bezier(.22,1,.36,1);
+}
+.setup-logo {
+  font-family: var(--font-d);
+  font-size: 3.5rem;
+  letter-spacing: 5px;
+  background: linear-gradient(135deg, #ffb347 0%, #e8572a 60%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-align: center;
+  margin-bottom: 0.2rem;
+}
+.setup-sub {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+.setup-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.setup-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.setup-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border-lit);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: var(--font-m);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.setup-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.setup-input::placeholder { color: var(--muted2); }
+.setup-help {
+  background: var(--card2);
+  border-radius: var(--r-md);
+  padding: 1rem 1.2rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.7;
+  border-left: 3px solid var(--accent);
+}
+.setup-help a { color: var(--accent2); text-decoration: none; }
+.setup-help a:hover { text-decoration: underline; }
+.setup-help ol { padding-left: 1.2rem; }
+.setup-help li { margin-bottom: 0.2rem; }
+.btn-setup {
+  padding: 1rem;
+  border-radius: var(--r-xl);
+  background: linear-gradient(135deg, var(--accent), #c0392b);
+  color: white;
+  font-family: var(--font-d);
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  box-shadow: 0 6px 20px rgba(232,87,42,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-setup:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,87,42,0.48); }
+.btn-setup:active { transform: scale(0.97); }
+.setup-error {
+  background: rgba(232,66,66,0.12);
+  border: 1px solid var(--syndicate);
+  border-radius: var(--r-md);
+  padding: 0.7rem 1rem;
+  font-size: 0.85rem;
+  color: #fca5a5;
+  display: none;
+}
+.setup-error.show { display: block; animation: fadeIn 0.2s; }
+
+/* ════════════════════════════════════════════════════════════
+   HOME SCREEN
+   ════════════════════════════════════════════════════════════ */
+#screen-home {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: radial-gradient(ellipse at 40% 20%, #0e1830 0%, var(--bg) 60%),
+              radial-gradient(ellipse at 80% 80%, #1a0808 0%, transparent 50%);
+  position: relative; overflow: hidden;
+}
+#screen-home::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.014) 60px, rgba(255,255,255,0.014) 61px),
+    repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.014) 60px, rgba(255,255,255,0.014) 61px);
+  pointer-events: none;
+}
+.home-content { width: 100%; max-width: 500px; text-align: center; position: relative; z-index: 1; }
+.home-logo {
+  font-family: var(--font-d);
+  font-size: clamp(4.5rem, 18vw, 8rem);
+  letter-spacing: 8px;
+  line-height: 1;
+  background: linear-gradient(135deg, #ffd270 0%, #ffb347 30%, #e8572a 70%, #c0392b 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 50px rgba(232,87,42,0.45));
+  animation: pop 0.7s cubic-bezier(.22,1,.36,1);
+}
+.home-tagline {
+  font-size: 0.75rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0.6rem 0 3rem;
+  animation: fadeIn 0.8s 0.2s both;
+}
+.home-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  animation: fadeUp 0.6s 0.3s cubic-bezier(.22,1,.36,1) both;
+}
+.home-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 2rem 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s, background 0.2s;
+  position: relative; overflow: hidden;
+}
+.home-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.home-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--accent-dim); }
+.home-card:hover::after { opacity: 0.04; }
+.home-card:active { transform: scale(0.97); }
+.home-card-icon { font-size: 2.8rem; margin-bottom: 0.8rem; }
+.home-card-title { font-family: var(--font-d); font-size: 1.4rem; letter-spacing: 2px; color: var(--accent2); margin-bottom: 0.3rem; }
+.home-card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+.home-reset { margin-top: 2rem; font-size: 0.72rem; color: var(--muted2); cursor: pointer; transition: color 0.2s; animation: fadeIn 1s 0.5s both; }
+.home-reset:hover { color: var(--muted); }
+
+/* ════════════════════════════════════════════════════════════
+   TV / HOST SCREEN
+   ════════════════════════════════════════════════════════════ */
+#screen-tv {
+  padding: 1.2rem;
+  gap: 0.9rem;
+  background: var(--bg);
+}
+
+/* Header */
+.tv-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.tv-logo {
+  font-family: var(--font-d);
+  font-size: 1.8rem;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #ffb347, #e8572a);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.tv-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.badge {
+  padding: 0.25rem 0.8rem;
+  border-radius: 40px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 1px solid var(--border-lit);
+  background: var(--card);
+  color: var(--accent2);
+  transition: all 0.3s;
+}
+.badge.night   { color: #c4b5fd; border-color: #4c1d95; background: #13102a; }
+.badge.day     { color: var(--accent2); border-color: #7c4a00; background: #1a1000; }
+.badge.trial   { color: #fca5a5; border-color: #7f1d1d; background: #1a0808; }
+.badge.over    { color: var(--town); border-color: #065f46; background: #081a10; }
+
+/* Stage */
+.tv-stage {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 2rem;
+  text-align: center;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.5s, border-color 0.5s;
+}
+.tv-stage.s-lobby  { background: #0a1020; border-color: var(--border-lit); }
+.tv-stage.s-night  { background: #080a1a; border-color: #2d1f6b; }
+.tv-stage.s-day    { background: #130d08; border-color: #5c3800; }
+.tv-stage.s-trial  { background: #110808; border-color: #5a1a1a; }
+.tv-stage.s-over   { background: #08100a; border-color: #1a4028; }
+.stage-icon {
+  font-size: 2.8rem;
+  margin-bottom: 0.6rem;
+  animation: pop 0.35s cubic-bezier(.22,1,.36,1);
+}
+.stage-main {
+  font-family: var(--font-d);
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  letter-spacing: 3px;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s;
+}
+.stage-sub {
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 520px;
+  line-height: 1.6;
+}
+/* Room code display */
+.stage-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.stage-code {
+  font-family: var(--font-d);
+  font-size: 3.5rem;
+  letter-spacing: 12px;
+  color: var(--accent2);
+  background: var(--card);
+  border: 2px solid var(--border-lit);
+  border-radius: var(--r-md);
+  padding: 0.2rem 1.5rem 0.2rem 1.9rem;
+  text-shadow: 0 0 25px rgba(245,166,35,0.5);
+  animation: glow 3s ease-in-out infinite;
+}
+.stage-url {
+  font-family: var(--font-m);
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--card);
+  padding: 0.5rem 1rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+/* Night log */
+.tv-log {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0.7rem 1rem;
+  font-size: 0.82rem;
+  font-family: var(--font-m);
+  max-height: 70px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+.log-k { color: var(--syndicate); }
+.log-s { color: var(--town); }
+.log-i { color: var(--accent2); }
+
+/* Players grid */
+.tv-section-label {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.tv-players { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.pcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0.55rem 0.95rem;
+  min-width: 88px;
+  text-align: center;
+  transition: border-color 0.25s, box-shadow 0.25s, opacity 0.25s, background 0.25s;
+  animation: fadeIn 0.3s both;
+}
+.pcard.alive  { border-color: var(--border-lit); }
+.pcard.ghost  { opacity: 0.5; background: #09090d; border-color: #1a1a1a; }
+.pcard.dead   { opacity: 0.35; background: #09090d; border-color: #111; }
+.pcard.hl-accuser { border-color: var(--accent2); box-shadow: 0 0 12px rgba(245,166,35,0.3); }
+.pcard.hl-accused { border-color: var(--syndicate); box-shadow: 0 0 16px rgba(232,66,66,0.35); animation: pulse 1.2s ease-in-out infinite; }
+.pcard.reveal-evil { border-color: var(--syndicate); background: #150505; }
+.pcard.reveal-town { border-color: var(--town); background: #051505; }
+.pcard-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+.pcard-stat { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+.pcard-role { font-size: 0.65rem; font-family: var(--font-m); color: var(--muted); margin-top: 2px; }
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle; }
+.dot.alive { background: var(--town); box-shadow: 0 0 5px var(--town); }
+.dot.dead  { background: #333; }
+
+/* Trial panel */
+.tv-trial {
+  background: #110808;
+  border: 1px solid #5a1a1a;
+  border-radius: var(--r-lg);
+  padding: 1rem 1.4rem;
+  animation: slideIn 0.3s cubic-bezier(.22,1,.36,1);
+}
+.tv-trial-title { font-family: var(--font-d); font-size: 1.1rem; letter-spacing: 2px; color: #f87171; margin-bottom: 0.5rem; }
+.tv-trial-meta  { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem; }
+.vote-track  { background: #1a0808; border-radius: 40px; height: 8px; overflow: hidden; }
+.vote-fill   { height: 100%; background: linear-gradient(90deg, var(--syndicate), #ff8888); border-radius: 40px; transition: width 0.4s ease; }
+.vote-labels { display: flex; justify-content: space-between; font-size: 0.72rem; font-family: var(--font-m); color: var(--muted); margin-top: 0.4rem; }
+
+/* Host action buttons */
+.tv-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.btn-tv {
+  font-family: var(--font-d);
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  padding: 0.6rem 1.4rem;
+  border-radius: 40px;
+  transition: all 0.15s;
+}
+.btn-tv.primary {
+  background: linear-gradient(135deg, var(--accent), #c0392b);
+  color: white;
+  box-shadow: 0 4px 16px rgba(232,87,42,0.35);
+}
+.btn-tv.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(232,87,42,0.5); }
+.btn-tv.secondary { background: var(--card); border: 1px solid var(--border-lit); color: var(--muted); }
+.btn-tv.secondary:hover { border-color: var(--accent); color: var(--text); }
+.btn-tv:active { transform: scale(0.96) !important; }
+.btn-tv:disabled { opacity: 0.28; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ════════════════════════════════════════════════════════════
+   PHONE / PLAYER SCREEN
+   ════════════════════════════════════════════════════════════ */
+#screen-phone {
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+/* Join sub-screen */
+#sub-join {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  gap: 1rem;
+  text-align: center;
+}
+.join-logo {
+  font-family: var(--font-d);
+  font-size: 3rem;
+  letter-spacing: 5px;
+  background: linear-gradient(135deg, #ffb347, #e8572a);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: pop 0.5s cubic-bezier(.22,1,.36,1);
+}
+.join-hint { font-size: 0.82rem; color: var(--muted); line-height: 1.6; max-width: 300px; }
+.join-input {
+  width: 100%; max-width: 320px;
+  padding: 1rem 1.2rem;
+  border-radius: var(--r-lg);
+  background: var(--panel);
+  border: 1px solid var(--border-lit);
+  color: var(--text);
+  font-size: 1.05rem;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.join-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.join-input::placeholder { color: var(--muted2); }
+.join-input.code { font-family: var(--font-d); font-size: 2rem; letter-spacing: 8px; text-transform: uppercase; }
+.join-btn {
+  width: 100%; max-width: 320px;
+  padding: 1rem;
+  border-radius: 40px;
+  background: linear-gradient(135deg, var(--accent), #c0392b);
+  color: white;
+  font-family: var(--font-d);
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  box-shadow: 0 6px 20px rgba(232,87,42,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.join-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,87,42,0.52); }
+.join-btn:active { transform: scale(0.96); }
+.join-error {
+  font-size: 0.82rem;
+  color: #fca5a5;
+  background: rgba(232,66,66,0.1);
+  border: 1px solid var(--syndicate);
+  border-radius: var(--r-sm);
+  padding: 0.5rem 1rem;
+  max-width: 320px;
+  display: none;
+}
+.join-error.show { display: block; animation: fadeIn 0.2s; }
+
+/* In-game phone */
+#sub-game {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.phone-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.2rem 0.8rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20;
+}
+.phone-hdr-logo { font-family: var(--font-d); font-size: 1.2rem; letter-spacing: 3px; background: linear-gradient(135deg,#ffb347,#e8572a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.phone-hdr-right { text-align: right; }
+.phone-hdr-name { font-weight: 700; font-size: 0.95rem; }
+.phone-hdr-phase { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-top: 1px; }
+
+.phone-body { flex: 1; padding: 1rem; display: flex; flex-direction: column; gap: 0.9rem; padding-bottom: 2rem; }
+
+/* Role card */
+.role-card {
+  border-radius: var(--r-xl);
+  padding: 1.5rem;
+  text-align: center;
+  border: 2px solid;
+  transition: all 0.4s;
+}
+.role-card.syndicate { background: linear-gradient(145deg, #180505, #0c0000); border-color: var(--syndicate); box-shadow: 0 0 30px rgba(232,66,66,0.12); }
+.role-card.town      { background: linear-gradient(145deg, #051808, #000c03); border-color: var(--town);      box-shadow: 0 0 30px rgba(61,220,132,0.08); }
+.role-card.detective { background: linear-gradient(145deg, #050e1a, #000508); border-color: var(--detective); box-shadow: 0 0 30px rgba(96,165,250,0.1); }
+.role-card.doctor    { background: linear-gradient(145deg, #051810, #000c08); border-color: var(--doctor);    box-shadow: 0 0 30px rgba(52,211,153,0.1); }
+.role-card.dead      { background: #0a0b0e; border-color: #1c1c1c; box-shadow: none; }
+.role-icon  { font-size: 2.8rem; margin-bottom: 0.5rem; }
+.role-name  { font-family: var(--font-d); font-size: 1.7rem; letter-spacing: 3px; margin-bottom: 0.3rem; }
+.role-desc  { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+.role-ally  {
+  margin-top: 0.8rem;
+  background: rgba(232,66,66,0.08);
+  border: 1px solid rgba(232,66,66,0.3);
+  border-radius: var(--r-sm);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.75rem;
+  color: #fca5a5;
+}
+.role-ally b { color: var(--syndicate); }
+
+/* Phase info card */
+.info-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1.1rem 1.3rem;
+  animation: slideIn 0.3s cubic-bezier(.22,1,.36,1);
+}
+.info-title { font-family: var(--font-d); font-size: 1.2rem; letter-spacing: 2px; color: var(--accent2); margin-bottom: 0.35rem; }
+.info-desc  { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+.info-desc strong { color: var(--text); }
+
+/* Action card */
+.action-card {
+  background: var(--card);
+  border: 1px solid var(--border-lit);
+  border-radius: var(--r-lg);
+  padding: 1.1rem;
+  animation: slideIn 0.3s cubic-bezier(.22,1,.36,1);
+}
+.action-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 0.7rem; }
+
+/* Target select */
+.t-select {
+  width: 100%;
+  padding: 0.9rem 2.5rem 0.9rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--panel);
+  border: 1px solid var(--border-lit);
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-b);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%235a6e88' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  margin-bottom: 0.8rem;
+}
+.t-select:focus { outline: none; border-color: var(--accent); }
+.t-select option { background: #101827; }
+
+/* Phone buttons */
+.p-btn-row { display: flex; gap: 0.65rem; }
+.p-btn {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  border-radius: var(--r-md);
+  font-family: var(--font-d);
+  font-size: 1rem;
+  letter-spacing: 1.5px;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.p-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: white; opacity: 0; border-radius: inherit;
+  transition: opacity 0.15s;
+}
+.p-btn:active::after { opacity: 0.08; }
+.p-btn:active { transform: scale(0.95); }
+.p-btn:disabled { opacity: 0.28; cursor: not-allowed; transform: none !important; }
+.p-btn-icon { font-size: 1.4rem; }
+.p-btn.act    { background: linear-gradient(135deg, var(--accent), #b53120); color: white; box-shadow: 0 4px 14px rgba(232,87,42,0.3); }
+.p-btn.safe   { background: linear-gradient(135deg, #0f4d2a, #083018); color: var(--town); border: 1px solid rgba(61,220,132,0.35); }
+.p-btn.skip   { background: var(--card2); border: 1px solid var(--border-lit); color: var(--muted); }
+.p-btn.accuse { background: linear-gradient(135deg, #5a1010, #300808); color: #fca5a5; border: 1px solid rgba(232,66,66,0.4); }
+.p-btn.guilty { background: linear-gradient(135deg, #7f1d1d, #4a0e0e); color: #fca5a5; border: 1px solid var(--syndicate); box-shadow: 0 4px 14px rgba(232,66,66,0.2); }
+.p-btn.inno   { background: linear-gradient(135deg, #064e3b, #03291f); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.4); box-shadow: 0 4px 14px rgba(52,211,153,0.12); }
+.p-btn.start  { background: linear-gradient(135deg, var(--accent2), #c47b00); color: var(--bg); font-size: 1.1rem; }
+
+/* Confirmed state */
+.confirmed-card {
+  background: rgba(61,220,132,0.06);
+  border: 1px solid rgba(61,220,132,0.25);
+  border-radius: var(--r-lg);
+  padding: 1.2rem;
+  text-align: center;
+  animation: fadeIn 0.3s;
+}
+.confirmed-icon { font-size: 2rem; margin-bottom: 0.3rem; }
+.confirmed-text { font-family: var(--font-d); font-size: 1.2rem; letter-spacing: 2px; color: var(--town); }
+.confirmed-sub  { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+
+/* Detective result */
+.det-result {
+  border-radius: var(--r-lg);
+  padding: 1.2rem;
+  text-align: center;
+  font-family: var(--font-d);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  border: 2px solid;
+  animation: pop 0.4s cubic-bezier(.22,1,.36,1);
+}
+.det-result.evil { background: #1a0505; border-color: var(--syndicate); color: var(--syndicate); }
+.det-result.town { background: #051808; border-color: var(--town); color: var(--town); }
+
+/* Game-over reveal */
+.gameover-banner {
+  border-radius: var(--r-xl);
+  padding: 1.8rem;
+  text-align: center;
+  border: 2px solid;
+  animation: pop 0.5s cubic-bezier(.22,1,.36,1);
+}
+.gameover-banner.town  { background: #051808; border-color: var(--town);      }
+.gameover-banner.evil  { background: #180505; border-color: var(--syndicate); }
+.gameover-trophy { font-size: 3rem; }
+.gameover-winner { font-family: var(--font-d); font-size: 2.2rem; letter-spacing: 3px; margin-top: 0.3rem; }
+.gameover-sub    { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+.reveal-list { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.reveal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  animation: fadeIn 0.3s both;
+}
+.reveal-row:last-child { border-bottom: none; }
+.reveal-name { font-weight: 700; font-size: 0.95rem; }
+.reveal-status { font-size: 0.72rem; color: var(--muted); }
+.reveal-role { font-size: 0.8rem; font-family: var(--font-m); font-weight: 500; }
+.reveal-role.syndicate  { color: var(--syndicate); }
+.reveal-role.godfather  { color: #ff6b6b; }
+.reveal-role.detective  { color: var(--detective); }
+.reveal-role.doctor     { color: var(--doctor); }
+.reveal-role.town       { color: var(--town); }
+.reveal-role.vigilante  { color: #fbbf24; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--card2);
+  border: 1px solid var(--border-lit);
+  border-radius: 40px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok   { background: #064e3b; border-color: var(--doctor); color: #6ee7b7; }
+.toast.bad  { background: #7f1d1d; border-color: var(--syndicate); color: #fca5a5; }
+.toast.info { background: #1c2a46; border-color: var(--detective); color: #93c5fd; }
+
+/* Connection status */
+.conn-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+  transition: background 0.3s;
+}
+.conn-dot.connected    { background: var(--town); box-shadow: 0 0 5px var(--town); }
+.conn-dot.connecting   { background: var(--accent2); animation: pulse 1s ease-in-out infinite; }
+.conn-dot.disconnected { background: var(--syndicate); }
+
+/* Lobby waiting screen */
+.waiting-card {
+  background: var(--panel);
+  border: 1px dashed var(--border-lit);
+  border-radius: var(--r-xl);
+  padding: 2rem;
+  text-align: center;
+  animation: fadeIn 0.4s;
+}
+.waiting-icon { font-size: 2.5rem; animation: pulse 2s ease-in-out infinite; }
+.waiting-title { font-family: var(--font-d); font-size: 1.4rem; letter-spacing: 2px; color: var(--muted); margin-top: 0.5rem; }
+.waiting-sub   { font-size: 0.8rem; color: var(--muted2); margin-top: 0.3rem; }
+
+/* Loading overlay */
+#loading {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1rem;
+}
+.loading-logo { font-family: var(--font-d); font-size: 3rem; letter-spacing: 5px; background: linear-gradient(135deg,#ffb347,#e8572a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.loading-dots { display: flex; gap: 6px; }
+.loading-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- ══ Loading ══ -->
+<div id="loading">
+  <div class="loading-logo">SYNDICATE</div>
+  <div class="loading-dots">
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+  </div>
+</div>
+
+<!-- ══ Setup Screen ══ -->
+<div class="screen" id="screen-setup">
+  <div class="setup-box">
+    <div class="setup-logo">🔪 SYNDICATE</div>
+    <div class="setup-sub">Multiplayer Setup</div>
+    <div class="setup-card">
+      <div>
+        <div class="setup-field-label">Supabase Project URL</div>
+        <input class="setup-input" id="sb-url" type="url" placeholder="https://xxxxxxxxxxxx.supabase.co" autocomplete="off" spellcheck="false">
+      </div>
+      <div>
+        <div class="setup-field-label">Supabase Anon Key</div>
+        <input class="setup-input" id="sb-key" type="text" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." autocomplete="off" spellcheck="false">
+      </div>
+      <div class="setup-help">
+        <strong style="color:var(--text)">Free setup (2 minutes):</strong>
+        <ol>
+          <li>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → create a free account</li>
+          <li>Create a new project (any name, any region)</li>
+          <li>In your project: <strong>Settings → API</strong></li>
+          <li>Copy <strong>Project URL</strong> and <strong>anon public</strong> key above</li>
+          <li>In <strong>Realtime</strong> settings, make sure Realtime is enabled</li>
+        </ol>
+        These credentials are saved in your browser only. Never shared.
+      </div>
+      <div class="setup-error" id="setup-error">Could not connect. Check your URL and key.</div>
+      <button class="btn-setup" onclick="setupSave()">CONNECT &amp; PLAY →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Home Screen ══ -->
+<div class="screen" id="screen-home">
+  <div class="home-content">
+    <div class="home-logo">SYNDICATE</div>
+    <div class="home-tagline">A Social Deduction Party Game</div>
+    <div class="home-cards">
+      <div class="home-card" onclick="goHost()">
+        <div class="home-card-icon">📺</div>
+        <div class="home-card-title">HOST</div>
+        <div class="home-card-desc">Create a room. Show this on the TV or main screen.</div>
+      </div>
+      <div class="home-card" onclick="goJoin()">
+        <div class="home-card-icon">📱</div>
+        <div class="home-card-title">JOIN</div>
+        <div class="home-card-desc">Enter a room code. Use your phone as a controller.</div>
+      </div>
+    </div>
+    <div class="home-reset" onclick="resetSetup()">⚙ Change Supabase settings</div>
+  </div>
+</div>
+
+<!-- ══ TV / Host Screen ══ -->
+<div class="screen" id="screen-tv">
+  <!-- Header bar -->
+  <div class="tv-bar">
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+      <div class="tv-logo">🔪 SYNDICATE</div>
+      <span style="font-size:0.72rem; color:var(--muted);"><span class="conn-dot" id="tv-conn-dot"></span><span id="tv-conn-label">Connecting...</span></span>
+    </div>
+    <div class="tv-badges">
+      <div class="badge" id="tv-round">ROUND 1</div>
+      <div class="badge" id="tv-phase">LOBBY</div>
+      <div class="badge" id="tv-pcount">0 PLAYERS</div>
+    </div>
+  </div>
+
+  <!-- Stage -->
+  <div class="tv-stage s-lobby" id="tv-stage">
+    <div class="stage-icon" id="tv-stage-icon">🎲</div>
+    <div class="stage-main" id="tv-stage-main">WAITING FOR PLAYERS</div>
+    <div class="stage-sub"  id="tv-stage-sub">Players open the site on their phones and tap JOIN, then enter the room code below.</div>
+    <div class="stage-code-wrap" id="tv-code-wrap">
+      <div class="stage-code" id="tv-room-code">----</div>
+      <div class="stage-url" id="tv-room-url">Loading URL...</div>
+    </div>
+    <div id="tv-morning-report" style="margin-top:1rem; display:none; font-size:0.9rem; color:var(--muted); line-height:1.8;"></div>
+  </div>
+
+  <!-- Night log -->
+  <div class="tv-log hidden" id="tv-log"></div>
+
+  <!-- Players -->
+  <div>
+    <div class="tv-section-label">Players</div>
+    <div class="tv-players" id="tv-players">
+      <div style="color:var(--muted2); font-size:0.85rem; padding:0.3rem;">Waiting for players to join...</div>
+    </div>
+  </div>
+
+  <!-- Trial panel -->
+  <div class="tv-trial hidden" id="tv-trial">
+    <div class="tv-trial-title">⚖️ TRIAL IN SESSION</div>
+    <div class="tv-trial-meta" id="tv-trial-meta"></div>
+    <div class="vote-track"><div class="vote-fill" id="tv-vote-fill" style="width:50%"></div></div>
+    <div class="vote-labels"><span id="tv-guilty-lbl">GUILTY 0</span><span id="tv-innocent-lbl">INNOCENT 0</span></div>
+  </div>
+
+  <!-- Host actions -->
+  <div class="tv-actions">
+    <button class="btn-tv primary" id="tv-start-btn" onclick="hostStartGame()" disabled>START GAME</button>
+    <button class="btn-tv secondary hidden" id="tv-next-btn" onclick="hostNextPhase()">NEXT PHASE →</button>
+    <button class="btn-tv secondary" onclick="hostReset()">RESET</button>
+    <button class="btn-tv secondary" onclick="showScreen('screen-home')">← HOME</button>
+  </div>
+</div>
+
+<!-- ══ Phone / Player Screen ══ -->
+<div class="screen" id="screen-phone">
+
+  <!-- Join sub-screen -->
+  <div id="sub-join" style="display:flex; flex-direction:column;">
+    <div class="join-logo">🔪 SYNDICATE</div>
+    <div class="join-hint">Enter your name and the 4-letter room code from the host screen</div>
+    <input class="join-input" id="join-name" type="text" placeholder="Your name" maxlength="14" autocomplete="off" spellcheck="false">
+    <input class="join-input code" id="join-code" type="text" placeholder="CODE" maxlength="4" autocomplete="off" spellcheck="false">
+    <button class="join-btn" onclick="phoneJoin()">JOIN GAME →</button>
+    <div class="join-error" id="join-error">Could not join. Check the room code and try again.</div>
+    <div class="join-hint" style="margin-top:0.5rem;">Make sure the host has opened the site first</div>
+    <div style="margin-top:1rem;"><button class="btn-tv secondary" style="font-size:0.8rem; padding: 0.5rem 1rem;" onclick="showScreen('screen-home')">← Back</button></div>
+  </div>
+
+  <!-- In-game sub-screen -->
+  <div id="sub-game" class="hidden">
+    <div class="phone-hdr">
+      <div>
+        <div class="phone-hdr-logo">🔪 SYNDICATE</div>
+        <div style="font-size:0.62rem; color:var(--muted); margin-top:1px;"><span class="conn-dot" id="ph-conn-dot"></span><span id="ph-conn-label">Connecting...</span></div>
+      </div>
+      <div class="phone-hdr-right">
+        <div class="phone-hdr-name" id="ph-name-display">---</div>
+        <div class="phone-hdr-phase" id="ph-phase-display">lobby</div>
+      </div>
+    </div>
+    <div class="phone-body" id="phone-body"></div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG & CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+const LS_URL  = 'syn_sb_url';
+const LS_KEY  = 'syn_sb_key';
+const LS_NAME = 'syn_player_name';
+
+const ROLES = {
+  syndicate: { label:'Syndicate', icon:'🔪', cls:'syndicate', team:'evil',
+    desc:'Work with your allies each night to eliminate town members. Stay hidden and avoid being voted out during the day.' },
+  godfather: { label:'Godfather', icon:'🎩', cls:'syndicate', team:'evil',
+    desc:'Syndicate leader — you appear innocent to the Detective. Direct your crew to eliminate townsfolk and seize control.' },
+  detective: { label:'Detective', icon:'🕵️', cls:'detective', team:'town',
+    desc:'Each night, investigate one player to learn if they are Town or Syndicate. Use your knowledge to guide the town.' },
+  doctor:    { label:'Doctor',    icon:'🏥', cls:'doctor',    team:'town',
+    desc:'Each night, protect one player from elimination. You may protect yourself once per game — choose wisely.' },
+  vigilante: { label:'Vigilante', icon:'🔫', cls:'town',      team:'town',
+    desc:'Once per game, you may eliminate a player at night you suspect is Syndicate. Killing an innocent ends your ability.' },
+  townie:    { label:'Townie',    icon:'🏘️', cls:'town',      team:'town',
+    desc:'A loyal member of the town. Debate, deduce, and vote to eliminate the Syndicate before they outnumber you.' },
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let sbClient    = null;
+let roomChannel = null;
+let isHost      = false;
+let roomCode    = '';
+let myId        = '';
+let myName      = '';
+let myRole      = null;
+let myAllies    = [];     // syndicate ally names (host sends privately)
+let privateMsg  = null;   // detective result
+let hasActed    = false;  // night action done
+let hasVoted    = false;  // trial vote done
+let accuseCount = 0;
+
+// Master game state (authoritative on host)
+let G = null;
+
+function freshG() {
+  return {
+    phase: 'lobby',
+    nightStep: 'syndicate',
+    round: 1,
+    players: [],
+    synVotes: {},       // { playerId: targetId }
+    nightKill: null,
+    docSave: null,
+    vigiTarget: null,
+    accusation: null,   // { accuserId, accusedId }
+    trialVotes: {},     // { playerId: 'guilty'|'innocent' }
+    winner: null,
+    log: [],            // [{ t:'k'|'s'|'i', msg }]
+    done: {},           // night actions done this step { playerId: true }
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUPABASE INIT
+// ═══════════════════════════════════════════════════════════════
+async function initSupabase(url, key) {
+  sbClient = supabase.createClient(url, key, {
+    realtime: { params: { eventsPerSecond: 20 } }
+  });
+  // Quick connectivity test
+  const { error } = await sbClient.from('_test_').select('*').limit(1).maybeSingle();
+  // Table won't exist but a 404/42P01 is fine — means we connected
+  if (error && !['42P01','PGRST116'].includes(error.code) && error.message?.includes('fetch')) {
+    throw new Error('Connection failed');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SCREEN ROUTING
+// ═══════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SETUP SCREEN
+// ═══════════════════════════════════════════════════════════════
+async function setupSave() {
+  const url = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('sb-key').value.trim();
+  const err = document.getElementById('setup-error');
+  err.classList.remove('show');
+  if (!url || !key) { err.textContent = 'Please fill in both fields.'; err.classList.add('show'); return; }
+  const btn = document.querySelector('.btn-setup');
+  btn.textContent = 'CONNECTING...'; btn.disabled = true;
+  try {
+    await initSupabase(url, key);
+    localStorage.setItem(LS_URL, url);
+    localStorage.setItem(LS_KEY, key);
+    showScreen('screen-home');
+  } catch(e) {
+    err.textContent = 'Could not connect. Check URL and key.';
+    err.classList.add('show');
+  } finally {
+    btn.textContent = 'CONNECT & PLAY →'; btn.disabled = false;
+  }
+}
+
+function resetSetup() {
+  localStorage.removeItem(LS_URL);
+  localStorage.removeItem(LS_KEY);
+  showScreen('screen-setup');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  REALTIME CHANNEL
+// ═══════════════════════════════════════════════════════════════
+function subscribeToRoom(code, onMsg) {
+  if (roomChannel) { sbClient.removeChannel(roomChannel); roomChannel = null; }
+  roomCode = code;
+  roomChannel = sbClient.channel(`syndicate:${code}`, {
+    config: { broadcast: { self: false } }
+  });
+  roomChannel.on('broadcast', { event: 'msg' }, ({ payload }) => onMsg(payload));
+  roomChannel.subscribe((status) => {
+    const connected = status === 'SUBSCRIBED';
+    setConnStatus(connected ? 'connected' : 'connecting', connected ? 'Live' : 'Connecting...');
+  });
+  return roomChannel;
+}
+
+function sendMsg(payload) {
+  if (!roomChannel) return;
+  roomChannel.send({ type: 'broadcast', event: 'msg', payload });
+}
+
+function setConnStatus(state, label) {
+  ['tv-conn-dot','ph-conn-dot'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.className = `conn-dot ${state}`; }
+  });
+  ['tv-conn-label','ph-conn-label'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HOST FLOW
+// ═══════════════════════════════════════════════════════════════
+function goHost() {
+  isHost = true;
+  myId   = 'host_' + Date.now();
+  G      = freshG();
+  roomCode = genCode();
+  subscribeToRoom(roomCode, handleHostMsg);
+
+  document.getElementById('tv-room-code').textContent = roomCode;
+  document.getElementById('tv-room-url').textContent  = location.href;
+  showScreen('screen-tv');
+  renderTV();
+}
+
+function handleHostMsg(msg) {
+  if (!G) return;
+  switch (msg.type) {
+
+    case 'join_req': {
+      if (G.phase !== 'lobby') { sendMsg({ type:'join_deny', to: msg.pid, reason:'Game already started' }); return; }
+      if (G.players.length >= 10) { sendMsg({ type:'join_deny', to: msg.pid, reason:'Room is full (max 10)' }); return; }
+      if (G.players.find(p => p.name.toLowerCase() === msg.name.toLowerCase())) {
+        sendMsg({ type:'join_deny', to: msg.pid, reason:'That name is taken' }); return;
+      }
+      const player = { id: msg.pid, name: msg.name, role: null, alive: true, isGhost: false, accuseCount: 0, docSelfUsed: false, vigiUsed: false };
+      G.players.push(player);
+      sendMsg({ type:'join_ok', pid: msg.pid, state: pubState() });
+      renderTV();
+      break;
+    }
+
+    case 'action':
+      handleAction(msg);
+      break;
+
+    case 'req_state':
+      sendMsg({ type:'state', state: pubState() });
+      break;
+  }
+}
+
+function hostStartGame() { handleAction({ type:'action', action:'start', pid: myId }); }
+function hostNextPhase()  {
+  if (G.phase === 'morning') {
+    G.phase = 'debate'; G.accusation = null; G.trialVotes = {};
+    G.players.forEach(p => { if (p.alive && !p.isGhost) p.accuseCount = 0; });
+    broadcastState(); renderTV();
+  }
+}
+function hostReset() {
+  G = freshG();
+  sendMsg({ type:'state', state: pubState() });
+  renderTV();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME LOGIC (runs only on host)
+// ═══════════════════════════════════════════════════════════════
+function handleAction(msg) {
+  if (!G || !isHost) return;
+  const { action, pid, tid } = msg;
+  const player = G.players.find(p => p.id === pid);
+
+  // ── LOBBY ──
+  if (G.phase === 'lobby' && action === 'start') {
+    if (G.players.length < 3) return;
+    startGame(); return;
+  }
+
+  if (!player) return;
+
+  // ── NIGHT ──
+  if (G.phase === 'night') {
+    if (action === 'skip') {
+      if (G.done[pid]) return;
+      G.done[pid] = true;
+      tryAdvanceNight(); return;
+    }
+    if (action === 'night_act') {
+      if (G.done[pid]) return;
+      const target = G.players.find(p => p.id === tid);
+      if (!target) return;
+      const step = G.nightStep;
+      const isEvil = player.role === 'syndicate' || player.role === 'godfather';
+
+      if (isEvil && step === 'syndicate') {
+        G.synVotes[pid] = tid; G.done[pid] = true;
+        const evilAlive = G.players.filter(p => (p.role==='syndicate'||p.role==='godfather') && p.alive && !p.isGhost);
+        if (Object.keys(G.synVotes).length >= evilAlive.length) {
+          // majority or consensus
+          const cnt = {}; Object.values(G.synVotes).forEach(id => cnt[id]=(cnt[id]||0)+1);
+          G.nightKill = Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
+          tryAdvanceNight();
+        } else { broadcastState(); }
+        return;
+      }
+      if (player.role === 'detective' && step === 'detective') {
+        G.done[pid] = true;
+        const appearsEvil = target.role === 'syndicate'; // godfather appears town
+        const msg = `${target.name} is ${appearsEvil ? '🔴 SYNDICATE' : '🟢 TOWN'}`;
+        sendMsg({ type:'private', to: pid, msg, isEvil: appearsEvil });
+        tryAdvanceNight(); return;
+      }
+      if (player.role === 'doctor' && step === 'doctor') {
+        if (tid === pid && player.docSelfUsed) return;
+        G.done[pid] = true; G.docSave = tid;
+        if (tid === pid) player.docSelfUsed = true;
+        tryAdvanceNight(); return;
+      }
+      if (player.role === 'vigilante' && step === 'vigilante') {
+        if (player.vigiUsed) return;
+        G.done[pid] = true; G.vigiTarget = tid; player.vigiUsed = true;
+        tryAdvanceNight(); return;
+      }
+    }
+    return;
+  }
+
+  // ── DEBATE ──
+  if (G.phase === 'debate' && action === 'accuse') {
+    if (!player.alive || player.isGhost) return;
+    if (player.accuseCount >= 2) return;
+    if (tid === pid) return;
+    const accused = G.players.find(p => p.id === tid);
+    if (!accused || !accused.alive || accused.isGhost) return;
+    player.accuseCount++;
+    G.accusation = { accuserId: pid, accusedId: tid };
+    G.trialVotes = {};
+    G.phase = 'trial';
+    broadcastState(); renderTV(); return;
+  }
+
+  // ── TRIAL ──
+  if (G.phase === 'trial' && (action === 'guilty' || action === 'innocent')) {
+    if (G.trialVotes[pid]) return;
+    G.trialVotes[pid] = action;
+    const allVoters = G.players.filter(p => p.alive || p.isGhost);
+    // Auto-exclude accused from voting
+    const eligible = allVoters.filter(p => p.id !== G.accusation?.accusedId);
+    if (Object.keys(G.trialVotes).length >= eligible.length) {
+      resolveTrial();
+    } else { broadcastState(); }
+    renderTV(); return;
+  }
+
+  // ── GAMEOVER restart ──
+  if (G.phase === 'gameover' && action === 'restart') {
+    G = freshG();
+    sendMsg({ type:'state', state: pubState() });
+    renderTV(); return;
+  }
+}
+
+function startGame() {
+  const roles = assignRoles(G.players.length);
+  G.players.forEach((p, i) => {
+    p.role = roles[i]; p.alive = true; p.isGhost = false;
+    p.accuseCount = 0; p.docSelfUsed = false; p.vigiUsed = false;
+  });
+  G.phase = 'night'; G.nightStep = 'syndicate'; G.round = 1;
+  G.done = {}; G.synVotes = {}; G.nightKill = null; G.docSave = null;
+  G.vigiTarget = null; G.log = []; G.winner = null;
+
+  // Send private role reveals (includes ally info for syndicate)
+  G.players.forEach(p => {
+    const allies = G.players
+      .filter(a => a.id !== p.id && (a.role==='syndicate'||a.role==='godfather'))
+      .map(a => a.name);
+    sendMsg({ type:'role_reveal', to: p.id, role: p.role, allies: (p.role==='syndicate'||p.role==='godfather') ? allies : [] });
+  });
+  broadcastState(); renderTV();
+}
+
+function assignRoles(n) {
+  let r = [];
+  if (n >= 9)      r = ['syndicate','syndicate','godfather','detective','doctor','vigilante', ...Array(n-6).fill('townie')];
+  else if (n >= 7) r = ['syndicate','syndicate','godfather','detective','doctor',             ...Array(n-5).fill('townie')];
+  else if (n >= 6) r = ['syndicate','godfather','detective','doctor',                         ...Array(n-4).fill('townie')];
+  else if (n >= 5) r = ['syndicate','syndicate','detective','doctor',                         ...Array(n-4).fill('townie')];
+  else if (n === 4) r = ['syndicate','detective','doctor','townie'];
+  else              r = ['syndicate','detective','townie'];
+  for (let i = r.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
+  return r;
+}
+
+function tryAdvanceNight() {
+  const steps = ['syndicate','detective','doctor','vigilante'];
+  const ci = steps.indexOf(G.nightStep);
+  let next = null;
+  for (let i = ci+1; i < steps.length; i++) {
+    const role = steps[i];
+    const alive = G.players.find(p => p.alive && !p.isGhost && (p.role===role || (role==='syndicate'&&p.role==='godfather')));
+    if (!alive) continue;
+    if (role === 'vigilante' && alive.vigiUsed) continue;
+    next = role; break;
+  }
+  if (next) { G.nightStep = next; G.done = {}; broadcastState(); renderTV(); }
+  else resolveNight();
+}
+
+function resolveNight() {
+  let killed = G.nightKill;
+  if (G.docSave && killed === G.docSave) killed = null;
+  G.log = [];
+  if (killed) {
+    const v = G.players.find(p => p.id===killed);
+    if (v) { v.alive=false; v.isGhost=true; G.log.push({ t:'k', msg:`${v.name} was eliminated by the Syndicate.` }); }
+  } else {
+    G.log.push({ t:'s', msg: G.docSave ? 'The Doctor saved someone — no one was eliminated.' : 'The Syndicate could not agree — no one was eliminated.' });
+  }
+  if (G.vigiTarget) {
+    const vt = G.players.find(p => p.id===G.vigiTarget);
+    if (vt && vt.alive && !vt.isGhost) { vt.alive=false; vt.isGhost=true; G.log.push({ t:'k', msg:`${vt.name} was shot by the Vigilante.` }); }
+  }
+  G.synVotes={}; G.nightKill=null; G.docSave=null; G.vigiTarget=null; G.done={};
+  G.phase = 'morning';
+  broadcastState(); renderTV();
+}
+
+function resolveTrial() {
+  const votes = G.trialVotes;
+  let guilty=0, innocent=0;
+  Object.values(votes).forEach(v => { if(v==='guilty') guilty++; else innocent++; });
+  const accused = G.players.find(p => p.id === G.accusation?.accusedId);
+  if (guilty > innocent && accused) {
+    accused.alive=false; accused.isGhost=true;
+    G.log.push({ t:'k', msg:`${accused.name} was voted out. They were ${ROLES[accused.role]?.label||accused.role}.` });
+  }
+  if (checkWin()) return;
+  G.phase='night'; G.nightStep='syndicate'; G.round++; G.accusation=null; G.trialVotes={}; G.done={}; G.synVotes={};
+  G.nightKill=null; G.docSave=null; G.vigiTarget=null;
+  // Re-send role info (for any re-connected players)
+  G.players.forEach(p => {
+    const allies = G.players.filter(a=>a.id!==p.id&&(a.role==='syndicate'||a.role==='godfather')).map(a=>a.name);
+    sendMsg({ type:'role_reveal', to:p.id, role:p.role, allies:(p.role==='syndicate'||p.role==='godfather')?allies:[] });
+  });
+  broadcastState(); renderTV();
+}
+
+function checkWin() {
+  const alive = G.players.filter(p=>p.alive&&!p.isGhost);
+  const evil = alive.filter(p=>p.role==='syndicate'||p.role==='godfather').length;
+  const town = alive.length - evil;
+  if (evil===0) { G.winner='TOWN'; G.phase='gameover'; broadcastState(); renderTV(); return true; }
+  if (evil>=town) { G.winner='SYNDICATE'; G.phase='gameover'; broadcastState(); renderTV(); return true; }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PUBLIC STATE (strips private role info)
+// ═══════════════════════════════════════════════════════════════
+function pubState() {
+  return {
+    phase: G.phase, nightStep: G.nightStep, round: G.round,
+    players: G.players.map(p => ({
+      id: p.id, name: p.name, alive: p.alive, isGhost: p.isGhost,
+      accuseCount: p.accuseCount,
+      role: G.phase==='gameover' ? p.role : undefined,
+    })),
+    accusation: G.accusation,
+    trialVotes: G.trialVotes,
+    winner: G.winner,
+    log: G.log,
+  };
+}
+function broadcastState() { sendMsg({ type:'state', state: pubState() }); }
+
+// ═══════════════════════════════════════════════════════════════
+//  TV RENDER
+// ═══════════════════════════════════════════════════════════════
+function renderTV() {
+  if (!G) return;
+  const stage   = document.getElementById('tv-stage');
+  const icon    = document.getElementById('tv-stage-icon');
+  const main    = document.getElementById('tv-stage-main');
+  const sub     = document.getElementById('tv-stage-sub');
+  const codeW   = document.getElementById('tv-code-wrap');
+  const phaseBg = document.getElementById('tv-phase');
+  const roundBg = document.getElementById('tv-round');
+  const pcntBg  = document.getElementById('tv-pcount');
+  const trial   = document.getElementById('tv-trial');
+  const log     = document.getElementById('tv-log');
+  const morn    = document.getElementById('tv-morning-report');
+  const startB  = document.getElementById('tv-start-btn');
+  const nextB   = document.getElementById('tv-next-btn');
+
+  roundBg.textContent = `ROUND ${G.round}`;
+  pcntBg.textContent  = `${G.players.length} PLAYERS`;
+  trial.classList.add('hidden');
+  log.classList.add('hidden');
+  morn.style.display = 'none';
+  codeW.style.display = 'none';
+  nextB.classList.add('hidden');
+
+  // Clear stage class
+  stage.className = 'tv-stage';
+  phaseBg.className = 'badge';
+
+  if (G.phase === 'lobby') {
+    stage.classList.add('s-lobby');
+    phaseBg.textContent = 'LOBBY';
+    icon.textContent = '🎲';
+    main.textContent = 'WAITING FOR PLAYERS';
+    sub.innerHTML = 'Players open this site on their phone and tap <strong>JOIN</strong>, then enter the room code.';
+    codeW.style.display = 'flex';
+    startB.style.display = '';
+    startB.disabled = G.players.length < 3;
+    startB.textContent = G.players.length < 3 ? `NEED ${3-G.players.length} MORE PLAYER${3-G.players.length===1?'':'S'}` : `START GAME — ${G.players.length} PLAYERS`;
+    nextB.classList.add('hidden');
+  }
+  else if (G.phase === 'night') {
+    stage.classList.add('s-night'); phaseBg.classList.add('night');
+    phaseBg.textContent = `NIGHT ${G.round}`;
+    icon.textContent = '🌙';
+    const stepLabel = { syndicate:'SYNDICATE', detective:'DETECTIVE', doctor:'DOCTOR', vigilante:'VIGILANTE' }[G.nightStep] || '???';
+    main.textContent = `NIGHT — ${stepLabel}`;
+    sub.innerHTML = `Players with the <strong>${stepLabel}</strong> role: check your phone for your action. Others wait quietly.`;
+    startB.style.display = 'none';
+  }
+  else if (G.phase === 'morning') {
+    stage.classList.add('s-day'); phaseBg.classList.add('day');
+    phaseBg.textContent = 'MORNING';
+    icon.textContent = '🌅'; main.textContent = 'MORNING REPORT';
+    const logHtml = G.log.map(e => `<span class="log-${e.t}">${e.msg}</span>`).join('<br>');
+    morn.innerHTML = logHtml; morn.style.display = 'block';
+    sub.innerHTML = 'Discuss what happened last night. Host clicks NEXT when ready to debate.';
+    nextB.classList.remove('hidden');
+    startB.style.display = 'none';
+  }
+  else if (G.phase === 'debate') {
+    stage.classList.add('s-day'); phaseBg.classList.add('day');
+    phaseBg.textContent = 'DEBATE';
+    icon.textContent = '🗣️'; main.textContent = 'TOWN DEBATE';
+    sub.innerHTML = 'Discuss and deduce. Each living player can accuse twice. Tap <strong>ACCUSE</strong> on your phone to put someone on trial.';
+    startB.style.display = 'none';
+  }
+  else if (G.phase === 'trial') {
+    stage.classList.add('s-trial'); phaseBg.classList.add('trial');
+    phaseBg.textContent = 'TRIAL';
+    icon.textContent = '⚖️'; main.textContent = 'TRIAL';
+    const acc = G.accusation;
+    const acrName  = G.players.find(p=>p.id===acc?.accuserId)?.name || '?';
+    const acdName  = G.players.find(p=>p.id===acc?.accusedId)?.name || '?';
+    sub.innerHTML = `<strong>${acrName}</strong> has accused <strong style="color:var(--syndicate)">${acdName}</strong> — everyone votes on their phone`;
+    trial.classList.remove('hidden');
+    const votes = G.trialVotes;
+    let g=0,i=0; Object.values(votes).forEach(v=>v==='guilty'?g++:i++);
+    const total = g+i;
+    const eligible = G.players.filter(p=>(p.alive||p.isGhost)&&p.id!==acc?.accusedId).length;
+    document.getElementById('tv-trial-meta').textContent = `${total} / ${eligible} votes cast`;
+    document.getElementById('tv-guilty-lbl').textContent = `GUILTY ${g}`;
+    document.getElementById('tv-innocent-lbl').textContent = `INNOCENT ${i}`;
+    const pct = total>0 ? (g/total*100) : 50;
+    document.getElementById('tv-vote-fill').style.width = pct+'%';
+    startB.style.display = 'none';
+  }
+  else if (G.phase === 'gameover') {
+    stage.classList.add('s-over'); phaseBg.classList.add('over');
+    phaseBg.textContent = 'GAME OVER';
+    icon.textContent = G.winner==='TOWN' ? '🏆' : '💀';
+    main.textContent = G.winner==='TOWN' ? '🏆 TOWN WINS!' : '💀 SYNDICATE WINS!';
+    sub.innerHTML = G.winner==='TOWN' ? 'The Syndicate has been eliminated. The town is safe.' : 'The Syndicate has seized control.';
+    // show log
+    log.classList.remove('hidden');
+    log.innerHTML = G.players.map(p => {
+      const r = ROLES[p.role]||{}; return `<span class="${p.alive?'log-s':'log-k'}">${p.name}: ${r.icon||''} ${r.label||p.role} — ${p.alive?'Survived':'Eliminated'}</span>`;
+    }).join('<br>');
+    startB.style.display = ''; startB.disabled = false; startB.textContent = 'PLAY AGAIN';
+    startB.onclick = () => { G=freshG(); sendMsg({type:'state',state:pubState()}); renderTV(); startB.onclick=hostStartGame; };
+  }
+
+  // ── Night log (non-gameover) ──
+  if (G.log?.length && !['gameover','lobby'].includes(G.phase)) {
+    log.classList.remove('hidden');
+    log.innerHTML = G.log.map(e=>`<span class="log-${e.t}">${e.msg}</span>`).join('<br>');
+  }
+
+  // ── Players grid ──
+  const pg = document.getElementById('tv-players');
+  if (!G.players.length) {
+    pg.innerHTML = '<div style="color:var(--muted2); font-size:0.85rem; padding:0.3rem;">Waiting for players to join...</div>';
+  } else {
+    pg.innerHTML = G.players.map(p => {
+      const alive = p.alive && !p.isGhost;
+      const isGhost = !p.alive && p.isGhost;
+      const r = G.phase==='gameover' ? (ROLES[p.role]||{}) : {};
+      let cls = 'pcard';
+      if (alive) cls += ' alive';
+      else if (isGhost) cls += ' ghost';
+      else cls += ' dead';
+      if (G.accusation?.accuserId === p.id) cls += ' hl-accuser';
+      if (G.accusation?.accusedId === p.id) cls += ' hl-accused';
+      if (G.phase==='gameover') cls += (ROLES[p.role]?.team==='evil' ? ' reveal-evil' : ' reveal-town');
+      return `<div class="${cls}">
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-stat"><span class="dot ${alive?'alive':'dead'}"></span>${alive?'Alive':isGhost?'Ghost':'Dead'}</div>
+        ${G.phase==='gameover' ? `<div class="pcard-role">${r.icon||''} ${r.label||p.role}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PHONE / PLAYER FLOW
+// ═══════════════════════════════════════════════════════════════
+function goJoin() {
+  showScreen('screen-phone');
+  document.getElementById('sub-join').style.display = 'flex';
+  document.getElementById('sub-game').classList.add('hidden');
+  if (localStorage.getItem(LS_NAME)) {
+    document.getElementById('join-name').value = localStorage.getItem(LS_NAME);
+  }
+}
+
+async function phoneJoin() {
+  const name = document.getElementById('join-name').value.trim();
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  const err  = document.getElementById('join-error');
+  err.classList.remove('show');
+  if (!name) { err.textContent = 'Enter your name.'; err.classList.add('show'); return; }
+  if (code.length !== 4) { err.textContent = 'Enter the 4-letter room code.'; err.classList.add('show'); return; }
+
+  myId   = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+  myName = name;
+  localStorage.setItem(LS_NAME, name);
+
+  // Subscribe to room
+  subscribeToRoom(code, handlePhoneMsg);
+
+  // Wait a moment for subscription, then send join request
+  await new Promise(r => setTimeout(r, 800));
+  sendMsg({ type:'join_req', pid: myId, name });
+
+  // Timeout if no response
+  const timeout = setTimeout(() => {
+    err.textContent = 'No response from host. Is the room code correct?';
+    err.classList.add('show');
+  }, 5000);
+
+  window.__joinTimeout = timeout;
+}
+
+function handlePhoneMsg(msg) {
+  if (msg.type === 'join_deny' && msg.to === myId) {
+    clearTimeout(window.__joinTimeout);
+    const err = document.getElementById('join-error');
+    err.textContent = msg.reason; err.classList.add('show');
+    return;
+  }
+  if (msg.type === 'join_ok' && msg.pid === myId) {
+    clearTimeout(window.__joinTimeout);
+    showPhoneGame(msg.state);
+    return;
+  }
+  if (msg.type === 'state' || msg.type === 'phase_change') {
+    if (document.getElementById('sub-game').classList.contains('hidden')) return; // not yet in game
+    renderPhone(msg.state);
+    return;
+  }
+  if (msg.type === 'role_reveal' && msg.to === myId) {
+    myRole   = msg.role;
+    myAllies = msg.allies || [];
+    hasActed = false;
+    renderPhone(null); // re-render with cached state
+    return;
+  }
+  if (msg.type === 'private' && msg.to === myId) {
+    privateMsg = msg.msg;
+    showToast(msg.msg, msg.isEvil ? 'bad' : 'ok');
+    renderPhone(null);
+    return;
+  }
+}
+
+let _lastState = null;
+function showPhoneGame(state) {
+  _lastState = state;
+  document.getElementById('sub-join').style.display = 'none';
+  document.getElementById('sub-game').classList.remove('hidden');
+  document.getElementById('ph-name-display').textContent = myName;
+  renderPhone(state);
+}
+
+function renderPhone(state) {
+  if (state) _lastState = state;
+  const s = _lastState;
+  if (!s) return;
+
+  hasVoted = hasVoted && s.phase === 'trial'; // reset vote on phase change
+  hasActed = hasActed && s.phase === 'night';
+
+  document.getElementById('ph-phase-display').textContent = s.phase;
+  const body = document.getElementById('phone-body');
+  const me   = s.players?.find(p => p.id === myId);
+  const alive  = me ? (me.alive && !me.isGhost) : true;
+  const isGhost = me ? (!me.alive && me.isGhost) : false;
+  const phase  = s.phase;
+  let html = '';
+
+  // ── Role card (always show if we have one) ──
+  if (myRole && phase !== 'lobby') {
+    const r = ROLES[myRole] || { label:myRole, icon:'❓', cls:'town', desc:'' };
+    const deadCls = (!alive && !isGhost) ? ' dead' : '';
+    const roleColor = { syndicate:'var(--syndicate)', godfather:'var(--syndicate)', detective:'var(--detective)', doctor:'var(--doctor)', vigilante:'#fbbf24', townie:'var(--town)' }[myRole] || 'var(--town)';
+    html += `<div class="role-card ${r.cls}${deadCls} anim-pop">
+      <div class="role-icon">${r.icon}</div>
+      <div class="role-name" style="color:${roleColor}">${r.label.toUpperCase()}</div>
+      <div class="role-desc">${r.desc}</div>
+      ${myAllies.length ? `<div class="role-ally">🤝 Allies: <b>${myAllies.join(', ')}</b></div>` : ''}
+    </div>`;
+  }
+
+  // ── Phase-specific content ──
+  if (phase === 'lobby') {
+    html += `<div class="waiting-card">
+      <div class="waiting-icon">⏳</div>
+      <div class="waiting-title">IN THE LOBBY</div>
+      <div class="waiting-sub">Waiting for the host to start the game. ${s.players?.length||0} player${s.players?.length===1?'':'s'} joined.</div>
+    </div>`;
+    const isFirst = s.players?.[0]?.id === myId;
+    if (isFirst) {
+      html += `<div class="action-card">
+        <div class="action-label">You are the host</div>
+        <div class="p-btn-row">
+          <button class="p-btn start" onclick="phoneAction('start')" ${(s.players?.length||0)<3?'disabled':''}>
+            <span class="p-btn-icon">▶️</span> START GAME
+          </button>
+        </div>
+        ${(s.players?.length||0)<3 ? '<div style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;text-align:center;">Need at least 3 players</div>' : ''}
+      </div>`;
+    }
+  }
+
+  else if (phase === 'night') {
+    const step = s.nightStep;
+    const isMyTurn =
+      (step==='syndicate' && (myRole==='syndicate'||myRole==='godfather')) ||
+      (step==='detective' && myRole==='detective') ||
+      (step==='doctor'    && myRole==='doctor')    ||
+      (step==='vigilante' && myRole==='vigilante');
+    const stepLabel = { syndicate:'SYNDICATE KILLS', detective:'DETECTIVE INVESTIGATES', doctor:'DOCTOR PROTECTS', vigilante:'VIGILANTE SHOOTS' }[step] || step.toUpperCase();
+
+    if (!alive && !isGhost) {
+      html += `<div class="info-card"><div class="info-title">💀 ELIMINATED</div><div class="info-desc">You are dead. Watch the game unfold.</div></div>`;
+    } else if (!myRole || !isMyTurn) {
+      html += `<div class="waiting-card">
+        <div class="waiting-icon">🌙</div>
+        <div class="waiting-title">${stepLabel}</div>
+        <div class="waiting-sub">${hasActed ? 'You have acted. Waiting for others...' : 'Wait quietly. It\'s not your turn.'}</div>
+      </div>`;
+    } else if (hasActed) {
+      html += `<div class="confirmed-card">
+        <div class="confirmed-icon">✅</div>
+        <div class="confirmed-text">ACTION SENT</div>
+        <div class="confirmed-sub">Waiting for others...</div>
+      </div>`;
+    } else {
+      const canSelf   = myRole === 'doctor';
+      const targets   = (s.players||[]).filter(p => p.alive && !p.isGhost && (canSelf || p.id !== myId));
+      const actLabel  = { syndicate:'🔪 ELIMINATE', godfather:'🎩 ELIMINATE', detective:'🔍 INVESTIGATE', doctor:'💉 PROTECT', vigilante:'🔫 SHOOT' }[myRole] || 'ACT';
+      const canSkip   = myRole === 'doctor' || myRole === 'vigilante';
+
+      html += `<div class="info-card">
+        <div class="info-title">🌙 ${stepLabel}</div>
+        <div class="info-desc">${ROLES[myRole]?.desc||''}</div>
+      </div>
+      <div class="action-card">
+        <div class="action-label">Choose your target</div>
+        <select class="t-select" id="night-sel">
+          <option value="">— Select a player —</option>
+          ${targets.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+        </select>
+        <div class="p-btn-row">
+          <button class="p-btn act" onclick="doNightAct()">
+            <span class="p-btn-icon">${ROLES[myRole]?.icon||'🎯'}</span> ${actLabel}
+          </button>
+          ${canSkip ? `<button class="p-btn skip" onclick="phoneAction('skip')"><span class="p-btn-icon">⏭</span> SKIP</button>` : ''}
+        </div>
+      </div>`;
+    }
+    // Detective result
+    if (privateMsg) {
+      const evil = privateMsg.includes('SYNDICATE');
+      html += `<div class="det-result ${evil?'evil':'town'}">${privateMsg}</div>`;
+    }
+  }
+
+  else if (phase === 'morning') {
+    const logItems = (s.log||[]).map(e=>`<div class="info-desc" style="padding:0.2rem 0;">• ${e.msg}</div>`).join('');
+    html += `<div class="info-card anim-fadein">
+      <div class="info-title">🌅 MORNING REPORT</div>
+      ${logItems || '<div class="info-desc">Nothing happened last night.</div>'}
+    </div>`;
+    if (!alive) html += `<div class="waiting-card"><div class="waiting-icon">💀</div><div class="waiting-title">ELIMINATED</div><div class="waiting-sub">Observe the rest of the game.</div></div>`;
+  }
+
+  else if (phase === 'debate') {
+    const myAccuse = me?.accuseCount || 0;
+    const remain = 2 - myAccuse;
+    if (!alive && !isGhost) {
+      html += `<div class="waiting-card"><div class="waiting-icon">💀</div><div class="waiting-title">ELIMINATED</div><div class="waiting-sub">You may watch but cannot participate.</div></div>`;
+    } else {
+      html += `<div class="info-card anim-fadein">
+        <div class="info-title">🗣️ TOWN DEBATE</div>
+        <div class="info-desc">Discuss and deduce who the Syndicate is. You have <strong>${remain}</strong> accusation${remain===1?'':'s'} remaining.</div>
+      </div>`;
+      if (!isGhost && remain > 0) {
+        const targets = (s.players||[]).filter(p=>p.alive&&!p.isGhost&&p.id!==myId);
+        html += `<div class="action-card">
+          <div class="action-label">Accuse a player</div>
+          <select class="t-select" id="accuse-sel">
+            <option value="">— Select suspect —</option>
+            ${targets.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+          </select>
+          <div class="p-btn-row">
+            <button class="p-btn accuse" onclick="doAccuse()">
+              <span class="p-btn-icon">⚡</span> ACCUSE
+            </button>
+          </div>
+        </div>`;
+      } else if (isGhost) {
+        html += `<div class="waiting-card"><div class="waiting-icon">👻</div><div class="waiting-title">GHOST OBSERVER</div><div class="waiting-sub">You can watch but cannot accuse. You can still vote in trials.</div></div>`;
+      }
+    }
+  }
+
+  else if (phase === 'trial') {
+    const acc = s.accusation;
+    const acrName = s.players?.find(p=>p.id===acc?.accuserId)?.name || '?';
+    const acdName = s.players?.find(p=>p.id===acc?.accusedId)?.name || '?';
+    const iAmAccused = acc?.accusedId === myId;
+    const myVote = s.trialVotes?.[myId];
+    const canVote = (alive||isGhost) && !iAmAccused && !myVote && !hasVoted;
+
+    html += `<div class="info-card anim-fadein">
+      <div class="info-title">⚖️ TRIAL</div>
+      <div class="info-desc"><strong>${acrName}</strong> has accused <strong style="color:var(--syndicate)">${acdName}</strong>.${iAmAccused?' That\'s you — defend yourself!':''}</div>
+    </div>`;
+
+    if (canVote) {
+      html += `<div class="action-card">
+        <div class="action-label">Cast your vote</div>
+        <div class="p-btn-row">
+          <button class="p-btn guilty" onclick="doVote('guilty')"><span class="p-btn-icon">👎</span> GUILTY</button>
+          <button class="p-btn inno"   onclick="doVote('innocent')"><span class="p-btn-icon">👍</span> INNOCENT</button>
+        </div>
+      </div>`;
+    } else if (iAmAccused) {
+      html += `<div class="waiting-card"><div class="waiting-icon">🎤</div><div class="waiting-title">MAKE YOUR CASE</div><div class="waiting-sub">Convince the town you're innocent!</div></div>`;
+    } else {
+      html += `<div class="confirmed-card">
+        <div class="confirmed-icon">✅</div>
+        <div class="confirmed-text">VOTE CAST</div>
+        <div class="confirmed-sub">Waiting for everyone to vote...</div>
+      </div>`;
+    }
+  }
+
+  else if (phase === 'gameover') {
+    const win = s.winner;
+    const myWin = (win==='TOWN' && ROLES[myRole]?.team==='town') || (win==='SYNDICATE' && ROLES[myRole]?.team==='evil');
+    html += `<div class="gameover-banner ${win==='TOWN'?'town':'evil'} anim-pop">
+      <div class="gameover-trophy">${win==='TOWN'?'🏆':'💀'}</div>
+      <div class="gameover-winner" style="color:${win==='TOWN'?'var(--town)':'var(--syndicate)'}">${win} WINS</div>
+      <div class="gameover-sub">${myWin ? 'You won! 🎉' : 'Better luck next time.'}</div>
+    </div>
+    <div class="reveal-list">
+      ${(s.players||[]).map((p,i)=>{
+        const r = ROLES[p.role]||{};
+        return `<div class="reveal-row" style="animation-delay:${i*0.06}s">
+          <div><div class="reveal-name">${p.name}</div><div class="reveal-status">${p.alive?'✅ Survived':'💀 Eliminated'}</div></div>
+          <div class="reveal-role ${p.role}">${r.icon||''} ${r.label||p.role||'?'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="p-btn-row">
+      <button class="p-btn start" style="width:100%" onclick="phoneAction('restart')">
+        <span class="p-btn-icon">🔄</span> PLAY AGAIN
+      </button>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PHONE ACTION SENDERS
+// ═══════════════════════════════════════════════════════════════
+function phoneAction(action, tid) {
+  sendMsg({ type:'action', action, pid: myId, tid });
+}
+
+function doNightAct() {
+  const sel = document.getElementById('night-sel');
+  if (!sel?.value) { showToast('Select a target first', 'bad'); return; }
+  hasActed = true;
+  sendMsg({ type:'action', action:'night_act', pid:myId, tid:sel.value });
+  showToast('Action sent!', 'ok');
+  // Update UI immediately
+  const body = document.getElementById('phone-body');
+  const existingInfo = body.querySelector('.info-card');
+  const confirmed = `<div class="confirmed-card"><div class="confirmed-icon">✅</div><div class="confirmed-text">ACTION SENT</div><div class="confirmed-sub">Waiting for others...</div></div>`;
+  const actionCard = body.querySelector('.action-card');
+  if (actionCard) actionCard.outerHTML = confirmed;
+  else renderPhone(null);
+}
+
+function doAccuse() {
+  const sel = document.getElementById('accuse-sel');
+  if (!sel?.value) { showToast('Select a player to accuse', 'bad'); return; }
+  sendMsg({ type:'action', action:'accuse', pid:myId, tid:sel.value });
+  showToast('Accusation made!', 'info');
+  accuseCount++;
+}
+
+function doVote(v) {
+  hasVoted = true;
+  sendMsg({ type:'action', action:v, pid:myId });
+  showToast(v==='guilty' ? 'Voted GUILTY' : 'Voted INNOCENT', v==='guilty' ? 'bad' : 'ok');
+  renderPhone(null);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════════
+let _toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type}`;
+  void t.offsetWidth; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i=0; i<4; i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════════
+async function boot() {
+  const url = localStorage.getItem(LS_URL);
+  const key = localStorage.getItem(LS_KEY);
+  if (url && key) {
+    try {
+      await initSupabase(url, key);
+      showScreen('screen-home');
+    } catch(e) {
+      showScreen('screen-setup');
+    }
+  } else {
+    showScreen('screen-setup');
+  }
+  document.getElementById('loading').style.display = 'none';
+}
+
+boot();
+</script>
+</body>
+</html>
