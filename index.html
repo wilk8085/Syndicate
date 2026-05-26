@@ -1045,11 +1045,19 @@ function subscribeToRoom(code, onMsg) {
     config: { broadcast: { self: false } }
   });
   roomChannel.on('broadcast', { event: 'msg' }, ({ payload }) => onMsg(payload));
-  roomChannel.subscribe((status) => {
-    const connected = status === 'SUBSCRIBED';
-    setConnStatus(connected ? 'connected' : 'connecting', connected ? 'Live' : 'Connecting...');
+  // Return a promise that resolves when the channel is actually SUBSCRIBED,
+  // so callers can safely await before sending broadcasts.
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    roomChannel.subscribe((status) => {
+      const connected = status === 'SUBSCRIBED';
+      setConnStatus(connected ? 'connected' : 'connecting', connected ? 'Live' : 'Connecting...');
+      if (connected && !settled) { settled = true; resolve(roomChannel); }
+      else if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') && !settled) {
+        settled = true; reject(new Error('Channel ' + status));
+      }
+    });
   });
-  return roomChannel;
 }
 
 function sendMsg(payload) {
@@ -1496,11 +1504,17 @@ async function phoneJoin() {
   myName = name;
   localStorage.setItem(LS_NAME, name);
 
-  // Subscribe to room
-  subscribeToRoom(code, handlePhoneMsg);
+  // Subscribe to room and WAIT until the channel is actually SUBSCRIBED
+  // before broadcasting — otherwise the join_req is dropped silently.
+  try {
+    await subscribeToRoom(code, handlePhoneMsg);
+  } catch (e) {
+    err.textContent = 'Could not connect. Check your internet and try again.';
+    err.classList.add('show');
+    return;
+  }
 
-  // Wait a moment for subscription, then send join request
-  await new Promise(r => setTimeout(r, 800));
+  // Now safe to send the join request
   sendMsg({ type:'join_req', pid: myId, name });
 
   // Timeout if no response
