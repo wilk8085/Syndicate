@@ -1041,28 +1041,50 @@ function resetSetup() {
 function subscribeToRoom(code, onMsg) {
   if (roomChannel) { sbClient.removeChannel(roomChannel); roomChannel = null; }
   roomCode = code;
-  roomChannel = sbClient.channel(`syndicate:${code}`, {
-    config: { broadcast: { self: false } }
+  // IMPORTANT: topic must NOT contain ':' — newer Supabase Realtime treats the
+  // part before ':' as a reserved namespace (e.g. 'realtime'), which causes
+  // anon broadcasts to be silently dropped on some projects. Use '-' instead.
+  // Also explicitly mark the channel public (private:false) and enable ack so
+  // we can detect when sends fail.
+  const topic = `syndicate-${code}`;
+  console.log('[realtime] subscribing to topic:', topic);
+  roomChannel = sbClient.channel(topic, {
+    config: {
+      broadcast: { self: false, ack: true },
+      private: false
+    }
   });
-  roomChannel.on('broadcast', { event: 'msg' }, ({ payload }) => onMsg(payload));
+  roomChannel.on('broadcast', { event: 'msg' }, ({ payload }) => {
+    console.log('[realtime] recv', payload?.type, payload);
+    onMsg(payload);
+  });
   // Return a promise that resolves when the channel is actually SUBSCRIBED,
   // so callers can safely await before sending broadcasts.
   return new Promise((resolve, reject) => {
     let settled = false;
-    roomChannel.subscribe((status) => {
+    roomChannel.subscribe((status, err) => {
+      console.log('[realtime] status:', status, err || '');
       const connected = status === 'SUBSCRIBED';
       setConnStatus(connected ? 'connected' : 'connecting', connected ? 'Live' : 'Connecting...');
       if (connected && !settled) { settled = true; resolve(roomChannel); }
       else if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') && !settled) {
-        settled = true; reject(new Error('Channel ' + status));
+        settled = true; reject(new Error('Channel ' + status + (err ? ': ' + err.message : '')));
       }
     });
   });
 }
 
-function sendMsg(payload) {
-  if (!roomChannel) return;
-  roomChannel.send({ type: 'broadcast', event: 'msg', payload });
+async function sendMsg(payload) {
+  if (!roomChannel) { console.warn('[realtime] sendMsg: no channel'); return 'no_channel'; }
+  console.log('[realtime] send', payload?.type, payload);
+  try {
+    const result = await roomChannel.send({ type: 'broadcast', event: 'msg', payload });
+    if (result !== 'ok') console.warn('[realtime] send result:', result, 'for', payload?.type);
+    return result;
+  } catch (e) {
+    console.error('[realtime] send error:', e);
+    return 'error';
+  }
 }
 
 function setConnStatus(state, label) {
@@ -1084,7 +1106,10 @@ function goHost() {
   myId   = 'host_' + Date.now();
   G      = freshG();
   roomCode = genCode();
-  subscribeToRoom(roomCode, handleHostMsg);
+  subscribeToRoom(roomCode, handleHostMsg).catch(e => {
+    console.error('[host] subscribe failed:', e);
+    showToast('Connection error: ' + e.message, 'bad');
+  });
 
   document.getElementById('tv-room-code').textContent = roomCode;
   document.getElementById('tv-room-url').textContent  = location.href;
@@ -1503,23 +1528,35 @@ async function phoneJoin() {
   myId   = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
   myName = name;
   localStorage.setItem(LS_NAME, name);
+  window.__joinSuccess = false;
+  clearTimeout(window.__joinTimeout);
 
   // Subscribe to room and WAIT until the channel is actually SUBSCRIBED
   // before broadcasting — otherwise the join_req is dropped silently.
   try {
     await subscribeToRoom(code, handlePhoneMsg);
   } catch (e) {
-    err.textContent = 'Could not connect. Check your internet and try again.';
+    err.textContent = 'Could not connect: ' + e.message;
     err.classList.add('show');
     return;
   }
 
-  // Now safe to send the join request
-  sendMsg({ type:'join_req', pid: myId, name });
+  // Send the join request, retrying a few times if the broadcast isn't ack'd
+  // (handles cold-start cases where the first broadcast is dropped server-side).
+  let joinAcked = false;
+  for (let attempt = 0; attempt < 3 && !joinAcked && !window.__joinSuccess; attempt++) {
+    const result = await sendMsg({ type:'join_req', pid: myId, name });
+    if (result === 'ok') joinAcked = true;
+    else await new Promise(r => setTimeout(r, 400));
+  }
 
-  // Timeout if no response
+  // Timeout if no response from the host (separate from broadcast ack —
+  // an ack just means the server received it, not that the host is listening).
   const timeout = setTimeout(() => {
-    err.textContent = 'No response from host. Is the room code correct?';
+    if (window.__joinSuccess) return;
+    err.textContent = joinAcked
+      ? 'No response from host. Is the room code correct, and is the host screen open?'
+      : 'Could not reach the realtime server. Check your Supabase project Realtime settings.';
     err.classList.add('show');
   }, 5000);
 
@@ -1529,12 +1566,14 @@ async function phoneJoin() {
 function handlePhoneMsg(msg) {
   if (msg.type === 'join_deny' && msg.to === myId) {
     clearTimeout(window.__joinTimeout);
+    window.__joinSuccess = true; // stop retries
     const err = document.getElementById('join-error');
     err.textContent = msg.reason; err.classList.add('show');
     return;
   }
   if (msg.type === 'join_ok' && msg.pid === myId) {
     clearTimeout(window.__joinTimeout);
+    window.__joinSuccess = true; // stop retries
     showPhoneGame(msg.state);
     return;
   }
